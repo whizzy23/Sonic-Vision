@@ -8,7 +8,7 @@ from scripts.audio_feedback import AudioFeedback
 # Constants
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STOP_FILE = os.path.abspath(os.path.join(BASE_DIR, "..", "stop_pointer.txt"))
-DETECTION_DELAY  = 2  # seconds
+DETECTION_DELAY  = 1  # seconds
 
 # Globals
 cap               = cv2.VideoCapture(1)

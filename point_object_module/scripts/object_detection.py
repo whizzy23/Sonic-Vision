@@ -2,7 +2,7 @@ import cv2
 from ultralytics import YOLO
 
 class ObjectDetector:
-    def __init__(self, model_path="./models/yolov8n.pt", confidence_threshold=0.3, exclude_classes=None):
+    def __init__(self, model_path="./models/yolov8n.pt", confidence_threshold=0.4, exclude_classes=None):
         self.model = YOLO(model_path)
         self.confidence_threshold = confidence_threshold
         self.exclude_classes = set(exclude_classes) if exclude_classes else set()

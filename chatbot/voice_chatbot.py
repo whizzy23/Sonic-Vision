@@ -5,7 +5,6 @@ def listen_command(device_index=2, timeout=5, phrase_limit=5):
 
     try:
         with sr.Microphone(device_index=device_index) as source:
-            print("🎤 Adjusting for ambient noise...")
             recognizer.adjust_for_ambient_noise(source, duration=1)
 
             print("🎧 Listening for command...")

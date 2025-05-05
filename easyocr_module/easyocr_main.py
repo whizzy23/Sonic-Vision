@@ -3,49 +3,59 @@ import sys
 import time
 import cv2
 
-# ensure working directory is this file’s folder
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '..')))
+# ─── Ensure we’re in module directory ─────────────────────────────────────────
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
 
 from camera import open_camera, capture_frame
-from ocr import extract_text
+from ocr    import extract_text
 from speech import speak_text
 
+# ─── Constants ────────────────────────────────────────────────────────────────
 CAPTURE_FILE = "capture_trigger.txt"
-STOP_FILE = "stop_ocr.txt"
+STOP_FILE    = "stop_ocr.txt"
+PAGE_FOLDER  = "pages"
 
-# open camera once
+# ─── Setup ─────────────────────────────────────────────────────────────────────
+os.makedirs(PAGE_FOLDER, exist_ok=True)
 cap = open_camera()
 if not cap:
     speak_text("Unable to access the camera. Exiting.", "en")
     sys.exit(1)
 
-speak_text("Book Reader Started. Say 'capture' to take a picture and read text", "en")
+speak_text("Book Reader active", "en")
+page_counter = 1
 
+# ─── Main Loop ────────────────────────────────────────────────────────────────
 while True:
-    # shutdown signal
+    # stop trigger
     if os.path.exists(STOP_FILE):
         speak_text("Text reader stopped.", "en")
         os.remove(STOP_FILE)
         break
 
-    # capture command
+    # capture trigger
     if os.path.exists(CAPTURE_FILE):
         os.remove(CAPTURE_FILE)
-
-        print("Capturing frame...")
+        print(f"[OCR] Capturing frame for Page {page_counter}…")
         frame = capture_frame(cap)
-        text = extract_text(frame)
+        if frame is None:
+            speak_text("Failed to capture frame. Check camera.", "en")
+            continue
 
+        text = extract_text(frame)
         if text:
-            print("Detected text:", text)
-            speak_text(text, "en")
+            fn = os.path.join(PAGE_FOLDER, f"page{page_counter}.txt")
+            with open(fn, "w", encoding="utf-8") as f:
+                f.write(text)
+            print(f"[OCR] Saved text to {fn}")
+            speak_text(f"Page {page_counter} saved.", "en")
+            page_counter += 1
         else:
-            print("No text detected.")
             speak_text("No text detected. Please adjust the camera.", "en")
 
     time.sleep(0.2)
 
-# cleanup
+# ─── Cleanup ───────────────────────────────────────────────────────────────────
 cap.release()
 cv2.destroyAllWindows()
